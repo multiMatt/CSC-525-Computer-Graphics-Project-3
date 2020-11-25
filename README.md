@@ -1,1 +1,1 @@
-# CSC-535-Data-Mining-Project-3
+# CSC-525-Computer-Graphics-Project-3
