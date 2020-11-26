@@ -308,6 +308,7 @@ void mainDisplayCallback(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     cameraHandler();
     drawStuff();
+    renderText();
     glutSwapBuffers();
 }
 
@@ -366,24 +367,6 @@ void drawStuff() {
     glTranslatef(25, 0, -10);
     drawSign("For Sale");
     glPopMatrix();
-
-    //2D Text
-    glDisable(GL_TEXTURE_2D);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-
-    renderText();
-
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glEnable(GL_TEXTURE_2D);
 }
 
 void keyDown(unsigned char key, int x, int y) {
@@ -518,11 +501,26 @@ void changeSize(int w, int h)
 
 // Draws text displayed on screen
 void renderText() {
+    glDisable(GL_TEXTURE_2D);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
     drawText("Movement: Forward - W", 785, 580, blackColor, helvetica);
     drawText("Movement: Left - A", 785, 560, blackColor, helvetica);
     drawText("Movement: Right - D", 785, 540, blackColor, helvetica);
     drawText("Movement: Back - S", 785, 520, blackColor, helvetica);
     drawText("Camera Look: Arrow Keys", 785, 500, blackColor, helvetica);
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
 }
 
 // Text function
