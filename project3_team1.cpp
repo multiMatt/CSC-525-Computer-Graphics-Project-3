@@ -44,6 +44,18 @@ bool is_left, is_right, is_forward, is_backward, is_look_left, is_look_right, is
 void* font = GLUT_STROKE_ROMAN;
 GLfloat currentPosMatrix[16];
 
+// Text and Font Variables
+std::string draw_text;
+void* helvetica = GLUT_BITMAP_HELVETICA_18;
+void* roman = GLUT_BITMAP_TIMES_ROMAN_24;
+
+// Color and alpha key variables
+int blackColor[3] = { 0, 0, 0 };
+
+// Window variables
+int windowWidth = 1000;
+int windowHeight = 600;
+
 // Prototypes
 void changeSize(int w, int h);
 void mainDisplayCallback(void);
@@ -57,6 +69,8 @@ void keyUp(unsigned char key, int x, int y);
 void specialDown(int key, int x, int y);
 void specialUp(int key, int x, int y);
 void cameraHandler();
+void renderText();
+void drawText(std::string text, int x, int y, int rgb[3], void* font);
 
 int main(int argc, char** argv)
 {
@@ -64,7 +78,7 @@ int main(int argc, char** argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(1000, 600);
+    glutInitWindowSize(windowWidth, windowHeight);
     glutCreateWindow("Project 3 - Team 1");
 
     // register callbacks
@@ -352,6 +366,24 @@ void drawStuff() {
     glTranslatef(25, 0, -10);
     drawSign("For Sale");
     glPopMatrix();
+
+    //2D Text
+    glDisable(GL_TEXTURE_2D);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    renderText();
+
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
 }
 
 void keyDown(unsigned char key, int x, int y) {
@@ -482,4 +514,23 @@ void changeSize(int w, int h)
 
     // Get Back to the Modelview
     glMatrixMode(GL_MODELVIEW);
+}
+
+// Draws text displayed on screen
+void renderText() {
+    drawText("Movement: Forward - W", 785, 580, blackColor, helvetica);
+    drawText("Movement: Left - A", 785, 560, blackColor, helvetica);
+    drawText("Movement: Right - D", 785, 540, blackColor, helvetica);
+    drawText("Movement: Back - S", 785, 520, blackColor, helvetica);
+    drawText("Camera Look: Arrow Keys", 785, 500, blackColor, helvetica);
+}
+
+// Text function
+void drawText(std::string text, int x, int y, int rgb[3], void* font) {
+    draw_text = text;
+    glColor3ub(rgb[0], rgb[1], rgb[2]);
+    glRasterPos2i(x, y);
+
+    for (size_t i = 0; i < draw_text.length(); i++)
+        glutBitmapCharacter(font, draw_text[i]);
 }
