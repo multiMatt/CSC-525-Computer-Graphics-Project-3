@@ -19,6 +19,7 @@
     3.        Press Ctrl+F5                     to EXECUTE
 ==================================================================================================*/
 #include <iostream>
+#include <string>
 #include <GL/glut.h>
 #include <math.h>
 
@@ -39,6 +40,9 @@ float speed = 0.2f;
 
 // Movement Variables
 bool is_left, is_right, is_forward, is_backward, is_look_left, is_look_right, is_look_down, is_look_up = false;
+
+void* font = GLUT_STROKE_ROMAN;
+GLfloat currentPosMatrix[16];
 
 // Prototypes
 void changeSize(int w, int h);
@@ -70,7 +74,7 @@ int main(int argc, char** argv)
     glutKeyboardUpFunc(keyUp);
     glutSpecialFunc(specialDown);
     glutSpecialUpFunc(specialUp);
-    glutTimerFunc(12, timerCallback, 123);
+    glutTimerFunc(8, timerCallback, 123);
 
     // OpenGL init
     glEnable(GL_DEPTH_TEST);
@@ -84,7 +88,7 @@ int main(int argc, char** argv)
 void timerCallback(int value)
 {
     mainDisplayCallback();
-    glutTimerFunc(12, timerCallback, 123);
+    glutTimerFunc(8, timerCallback, 123);
 }
 
 void drawPatrickHouse() {
@@ -261,6 +265,30 @@ void drawSpongebobHouse() {
 
 }
 
+void drawSign(string text) {
+    glPushMatrix();
+        glColor3ub(50, 50, 50);
+        glTranslatef(0.0f, -0.5f, 0.0f);
+        glScalef(0.3f, 3.5f, 0.3f);
+        glutSolidCube(1);
+    glPopMatrix();
+    glPushMatrix();
+        glColor3ub(170, 140, 65);
+        glTranslatef(0.0f, 1.0f, 0.05f);
+        glScalef(1.75f, 0.5f, 0.3f);
+        glutSolidCube(1);
+    glPopMatrix();
+
+    glPushMatrix();
+        glColor3ub(0, 0, 0);
+        glLineWidth(3);
+        glTranslatef(-0.8f, 0.85f, 0.22f);
+        glScalef(0.003f, 0.003f, 0.3f);
+        for (size_t i = 0; i < text.length(); i++)
+            glutStrokeCharacter(font, text[i]);
+    glPopMatrix();
+}
+
 void mainDisplayCallback(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -308,6 +336,21 @@ void drawStuff() {
     glPushMatrix();
     glTranslatef(25, 0, -40);
     drawSpongebobHouse();
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(-15, 0, -10);
+    drawSign("For Sale");
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(5, 0, -10);
+    drawSign("For Sale");
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(25, 0, -10);
+    drawSign("For Sale");
     glPopMatrix();
 }
 
@@ -416,8 +459,6 @@ void cameraHandler() {
         z -= -lx * speed;
 
     }
-
-    //std::cout << "x:" << x << " z:" << z << "\n";
 }
 
 void changeSize(int w, int h)
