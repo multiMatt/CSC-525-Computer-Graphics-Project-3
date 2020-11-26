@@ -1,4 +1,4 @@
-/*==================================================================================================
+﻿/*==================================================================================================
  COURSE:                CSC 525/625
  ASSIGNMENT:            Project 3
  DATE:                  12/7/20
@@ -9,7 +9,7 @@
  -Niko Robbins          ()
  -Tristan Tyler         (16.67%; created code)
  -Alicia Willard        ()
- DESCRIPTION:           
+ DESCRIPTION:
  NOTES:                 Must use C:\Temp as the location of the files or the root of the file hierarchy.
  FILES:                 project3_team1.cpp, labProject.sln, freeglut.dll, glut.h, freeglut.lib
  IDE/COMPILER:          Microsoft Visual Studio 2019
@@ -40,6 +40,18 @@ float speed = 0.2f;
 // Movement Variables
 bool is_left, is_right, is_forward, is_backward, is_look_left, is_look_right, is_look_down, is_look_up = false;
 
+// Text and Font Variables
+std::string draw_text;
+void* helvetica = GLUT_BITMAP_HELVETICA_18;
+void* roman = GLUT_BITMAP_TIMES_ROMAN_24;
+
+// Color and alpha key variables
+int blackColor[3] = { 0, 0, 0 };
+
+// Window variables
+int windowWidth = 1000;
+int windowHeight = 600;
+
 // Prototypes
 void changeSize(int w, int h);
 void mainDisplayCallback(void);
@@ -53,6 +65,8 @@ void keyUp(unsigned char key, int x, int y);
 void specialDown(int key, int x, int y);
 void specialUp(int key, int x, int y);
 void cameraHandler();
+void drawText();
+void drawText(std::string text, int x, int y, int rgb[3], void* font);
 
 int main(int argc, char** argv)
 {
@@ -60,7 +74,7 @@ int main(int argc, char** argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(1000, 600);
+    glutInitWindowSize(windowWidth, windowHeight);
     glutCreateWindow("Project 3 - Team 1");
 
     // register callbacks
@@ -98,85 +112,85 @@ void drawSquidwardHouse() {
 
     // Base of House
     glPushMatrix();
-        glColor3ub(8, 33, 93);
-        glRotatef(-90.0f, 1.0f, 0, 0);
-        gluCylinder(baseObj, 5, 4.0f, 15, 15, 15);
+    glColor3ub(8, 33, 93);
+    glRotatef(-90.0f, 1.0f, 0, 0);
+    gluCylinder(baseObj, 5, 4.0f, 15, 15, 15);
     glPopMatrix();
 
     // Left Ear
     glPushMatrix();
-        glColor3ub(37, 53, 103);
-        glTranslatef(4.8f, 7.5f, 0.0f);
-        glRotatef(4.0f, 0, 0, 1.0f);
-        glScalef(1.2f, 5.0f, 1.5f);
-        glutSolidCube(1);
+    glColor3ub(37, 53, 103);
+    glTranslatef(4.8f, 7.5f, 0.0f);
+    glRotatef(4.0f, 0, 0, 1.0f);
+    glScalef(1.2f, 5.0f, 1.5f);
+    glutSolidCube(1);
     glPopMatrix();
 
     // Right Ear
     glPushMatrix();
-        glColor3ub(37, 53, 103);
-        glTranslatef(-4.8f, 7.5f, 0.0f);
-        glRotatef(-4.0f, 0, 0, 1.0f);
-        glScalef(1.2f, 5.0f, 1.5f);
-        glutSolidCube(1);
+    glColor3ub(37, 53, 103);
+    glTranslatef(-4.8f, 7.5f, 0.0f);
+    glRotatef(-4.0f, 0, 0, 1.0f);
+    glScalef(1.2f, 5.0f, 1.5f);
+    glutSolidCube(1);
     glPopMatrix();
 
     // Door
     glPushMatrix();
-        glColor3ub(175, 128, 58);
-        glTranslatef(0.0f, -1.0f, 4.75f);
-        glRotatef(-90.0f, 0, 1.0f, 0.0f);
-        glScalef(0.2f, 2.0f, 0.8f);
-        glutSolidSphere(2.3f, 30, 30);
+    glColor3ub(175, 128, 58);
+    glTranslatef(0.0f, -1.0f, 4.75f);
+    glRotatef(-90.0f, 0, 1.0f, 0.0f);
+    glScalef(0.2f, 2.0f, 0.8f);
+    glutSolidSphere(2.3f, 30, 30);
     glPopMatrix();
 
     // Nose
     glPushMatrix();
-        glColor3ub(37, 53, 103);
-        glTranslatef(0, 8.0f, 4.1f);
-        glScalef(1.8f, 7.0f, 2.5f);
-        glutSolidCube(1);
+    glColor3ub(37, 53, 103);
+    glTranslatef(0, 8.0f, 4.1f);
+    glScalef(1.8f, 7.0f, 2.5f);
+    glutSolidCube(1);
     glPopMatrix();
 
     // Eyebrow
     glPushMatrix();
-        glColor3ub(37, 53, 89);
-        glTranslatef(0, 11.0f, 4.2f);
-        glRotatef(90.0f, 0, 0.0f, 1.0f);
-        glScalef(1.8f, 7.0f, 2.5f);
-        glutSolidCube(1);
+    glColor3ub(37, 53, 89);
+    glTranslatef(0, 11.0f, 4.2f);
+    glRotatef(90.0f, 0, 0.0f, 1.0f);
+    glScalef(1.8f, 7.0f, 2.5f);
+    glutSolidCube(1);
     glPopMatrix();
 
     // Left Eye
     glPushMatrix();
-        glColor3ub(37, 53, 140);
-        glTranslatef(2.0f, 8.5f, 4.0f);
-        glRotatef(5.0f, 0, 1.0f, 0.0f);
-        glScalef(1.0f, 1.0f, 2.0f);
-        glutSolidTorus(0.25,0.95,20,20);
+    glColor3ub(37, 53, 140);
+    glTranslatef(2.0f, 8.5f, 4.0f);
+    glRotatef(5.0f, 0, 1.0f, 0.0f);
+    glScalef(1.0f, 1.0f, 2.0f);
+    glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
-        glColor3ub(40, 60, 170);
-        glTranslatef(2.0f, 8.5f, 4.0f);
-        glRotatef(15.0f, 0, 1.0f, 0.0f);
-        gluDisk(baseObj,0,1,20,20);
+    glColor3ub(40, 60, 170);
+    glTranslatef(2.0f, 8.5f, 4.0f);
+    glRotatef(15.0f, 0, 1.0f, 0.0f);
+    gluDisk(baseObj, 0, 1, 20, 20);
     glPopMatrix();
 
     // Left Eye
     glPushMatrix();
-        glColor3ub(37, 53, 140);
-        glTranslatef(-2.0f, 8.5f, 4.0f);
-        glRotatef(-5.0f, 0, 1.0f, 0.0f);
-        glScalef(1.0f, 1.0f, 2.0f);
-        glutSolidTorus(0.25, 0.95, 20, 20);
+    glColor3ub(37, 53, 140);
+    glTranslatef(-2.0f, 8.5f, 4.0f);
+    glRotatef(-5.0f, 0, 1.0f, 0.0f);
+    glScalef(1.0f, 1.0f, 2.0f);
+    glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
-        glColor3ub(40, 60, 170);
-        glTranslatef(-2.0f, 8.5f, 4.0f);
-        glRotatef(-15.0f, 0, 1.0f, 0.0f);
-        gluDisk(baseObj, 0, 1, 20, 20);
+    glColor3ub(40, 60, 170);
+    glTranslatef(-2.0f, 8.5f, 4.0f);
+    glRotatef(-15.0f, 0, 1.0f, 0.0f);
+    gluDisk(baseObj, 0, 1, 20, 20);
     glPopMatrix();
 
     gluDeleteQuadric(baseObj);
@@ -185,67 +199,67 @@ void drawSquidwardHouse() {
 void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
     srand(seed);
     glPushMatrix();
-        glColor3ub(150 - (rand() % 25), 215 - (rand() % 25), 40 - (rand() % 25));
-        glTranslatef(0.0f, 10.0f, 0.0f);
-        glRotatef(rotx, 1.0f, 0.0f, 0.0f);
-        glRotatef(roty, 0.0f, 1.0f, 0.0f);
-        glRotatef(rotz, 0.0f, 0.0f, 1.0f);
-        glScalef(.7f, 5.0f, 0.7f);
-        glutSolidSphere(size, 30, 30);
+    glColor3ub(150 - (rand() % 25), 215 - (rand() % 25), 40 - (rand() % 25));
+    glTranslatef(0.0f, 10.0f, 0.0f);
+    glRotatef(rotx, 1.0f, 0.0f, 0.0f);
+    glRotatef(roty, 0.0f, 1.0f, 0.0f);
+    glRotatef(rotz, 0.0f, 0.0f, 1.0f);
+    glScalef(.7f, 5.0f, 0.7f);
+    glutSolidSphere(size, 30, 30);
     glPopMatrix();
 }
 
-void drawSpongebobHouse() { 
+void drawSpongebobHouse() {
     GLUquadricObj* baseObj = gluNewQuadric();
     gluQuadricDrawStyle(baseObj, GLU_FILL);
 
     // Structure
     glPushMatrix();
-        glColor3ub(190, 60, 35);
-        glTranslatef(0.0f, 1.0f, 0.0f);
-        glScalef(1.0f, 2.0f, 1.0f);
-        glutSolidSphere(5, 30, 30);
+    glColor3ub(190, 60, 35);
+    glTranslatef(0.0f, 1.0f, 0.0f);
+    glScalef(1.0f, 2.0f, 1.0f);
+    glutSolidSphere(5, 30, 30);
     glPopMatrix();
 
     // Door
     glPushMatrix();
-        glColor3ub(100, 130, 200);
-        glTranslatef(0.0f, -1.0f, 4.75f);
-        glRotatef(-90.0f, 0, 1.0f, 0.0f);
-        glScalef(0.2f, 2.0f, 0.8f);
-        glutSolidSphere(2.3f, 30, 30);
+    glColor3ub(100, 130, 200);
+    glTranslatef(0.0f, -1.0f, 4.75f);
+    glRotatef(-90.0f, 0, 1.0f, 0.0f);
+    glScalef(0.2f, 2.0f, 0.8f);
+    glutSolidSphere(2.3f, 30, 30);
     glPopMatrix();
 
     // Window 1
     glPushMatrix();
-        glColor3ub(37, 53, 140);
-        glTranslatef(-2.1f, 6.5f, 3.7f);
-        glRotatef(-20.0f, 2.5f, 2.5f, 0.0f);
-        glScalef(1.0f, 1.0f, 1.0f);
-        glutSolidTorus(0.25, 0.95, 20, 20);
+    glColor3ub(37, 53, 140);
+    glTranslatef(-2.1f, 6.5f, 3.7f);
+    glRotatef(-20.0f, 2.5f, 2.5f, 0.0f);
+    glScalef(1.0f, 1.0f, 1.0f);
+    glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
-        glColor3ub(40, 60, 170);
-        glTranslatef(-2.1f, 6.5f, 3.75f);
-        glRotatef(-20.0f, 3.5f, 5.5f, 0.0f);
-        gluDisk(baseObj, 0, 1, 20, 20);
+    glColor3ub(40, 60, 170);
+    glTranslatef(-2.1f, 6.5f, 3.75f);
+    glRotatef(-20.0f, 3.5f, 5.5f, 0.0f);
+    gluDisk(baseObj, 0, 1, 20, 20);
     glPopMatrix();
 
     // Window 2
     glPushMatrix();
-        glColor3ub(37, 53, 140);
-        glTranslatef(2.7f, 2.5f, 4.35f);
-        glRotatef(30.0f, 0.0f, 1.0f, 0.0f);
-        glScalef(1.0f, 1.0f, 1.0f);
-        glutSolidTorus(0.25, 0.95, 20, 20);
+    glColor3ub(37, 53, 140);
+    glTranslatef(2.7f, 2.5f, 4.35f);
+    glRotatef(30.0f, 0.0f, 1.0f, 0.0f);
+    glScalef(1.0f, 1.0f, 1.0f);
+    glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
-        glColor3ub(40, 60, 170);
-        glTranslatef(2.7f, 2.5f, 4.50f);
-        glRotatef(30.0f, 0, 1.0f, 0);
-        gluDisk(baseObj, 0, 1, 20, 20);
+    glColor3ub(40, 60, 170);
+    glTranslatef(2.7f, 2.5f, 4.50f);
+    glRotatef(30.0f, 0, 1.0f, 0);
+    gluDisk(baseObj, 0, 1, 20, 20);
     glPopMatrix();
 
     // Leaf
@@ -294,7 +308,7 @@ void drawStuff() {
     glVertex3f(1000.0f, 0.01f, 4.0f);
     glVertex3f(1000.0f, 0.01f, -4.0f);
     glEnd();
-    
+
     glPushMatrix();
     glTranslatef(-15, 0, -40);
     drawPatrickHouse();
@@ -309,6 +323,43 @@ void drawStuff() {
     glTranslatef(25, 0, -40);
     drawSpongebobHouse();
     glPopMatrix();
+
+    //2D Text
+    glDisable(GL_TEXTURE_2D);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    drawText();
+    
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+}
+
+// Draws text displayed on screen
+void drawText() {
+	drawText("Movement: Forward - W", 785, 580, blackColor, helvetica);
+    drawText("Movement: Left - A", 785, 560, blackColor, helvetica);
+    drawText("Movement: Right - D", 785, 540, blackColor, helvetica);
+    drawText("Movement: Back - S", 785, 520, blackColor, helvetica);
+    drawText("Camera Look: Arrow Keys", 785, 500, blackColor, helvetica);
+}
+
+// Text function
+void drawText(std::string text, int x, int y, int rgb[3], void* font) {
+	draw_text = text;
+	glColor3ub(rgb[0], rgb[1], rgb[2]);
+	glRasterPos2i(x, y);
+
+	for (size_t i = 0; i < draw_text.length(); i++)
+		glutBitmapCharacter(font, draw_text[i]);
 }
 
 void keyDown(unsigned char key, int x, int y) {
