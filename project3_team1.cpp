@@ -36,10 +36,15 @@ float x_sens = 0.03f;
 // Camera y sensitivity
 float y_sens = 0.02f;
 // Camera move speed
-float speed = 0.2f;
+float speed = 0.25f;
 
 // Movement Variables
 bool is_left, is_right, is_forward, is_backward, is_look_left, is_look_right, is_look_down, is_look_up = false;
+bool is_jumping = false;
+bool on_ground = true;
+int jump_energy, energy_max = 25;
+double jump_force = 0.053;
+double jump_speed = 0.15;
 
 void* font = GLUT_STROKE_ROMAN;
 GLfloat currentPosMatrix[16];
@@ -71,6 +76,8 @@ void specialUp(int key, int x, int y);
 void cameraHandler();
 void renderText();
 void drawText(std::string text, int x, int y, int rgb[3], void* font);
+void drawGrassLeaf(float size, float rotx, float roty, float rotz, int seed, float r, float g, float b);
+void drawLeaf(float size, float rotx, float roty, float rotz, int seed);
 
 int main(int argc, char** argv)
 {
@@ -201,7 +208,7 @@ void drawSquidwardHouse() {
 }
 
 void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
-    srand(seed);
+    std::srand(seed);
     glPushMatrix();
         glColor3ub(150 - (rand() % 25), 215 - (rand() % 25), 40 - (rand() % 25));
         glTranslatef(0.0f, 10.0f, 0.0f);
@@ -210,6 +217,20 @@ void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
         glRotatef(rotz, 0.0f, 0.0f, 1.0f);
         glScalef(.7f, 5.0f, 0.7f);
         glutSolidSphere(size, 30, 30);
+    glPopMatrix();
+}
+
+void drawGrassLeaf(float size, float rotx, float roty, float rotz, int seed, float r, float g, float b) {
+    std::srand(seed);
+    float offset = float(rand() % 5);
+    glPushMatrix();
+    glColor3ub(GLubyte(r - (rand() % 25)), GLubyte(g - (rand() % 25)), GLubyte(b - (rand() % 25)));
+    glTranslatef(0.0f, 0.0f, 0.0f);
+    glRotatef(rotx + offset, 1.0f, 0.0f, 0.0f);
+    glRotatef(roty + offset, 0.0f, 1.0f, 0.0f);
+    glRotatef(rotz + offset, 0.0f, 0.0f, 1.0f);
+    glScalef(.7f, 5.0f, 0.7f);
+    glutSolidSphere(size, 30, 30);
     glPopMatrix();
 }
 
@@ -303,6 +324,22 @@ void drawSign(string text) {
     glPopMatrix();
 }
 
+void drawGrass(float size, int seed) {
+    std::srand(seed);
+    float r = float(rand() % 255);
+    float g = float(rand() % 255);
+    float b = float(rand() % 255);
+    drawGrassLeaf(size, 0, 0, 0, 1, r, g, b);
+    drawGrassLeaf(size, 30.0f, 0, 0, 2, r, g, b);
+    drawGrassLeaf(size, -30.0f, 0, 0, 3, r, g, b);
+    drawGrassLeaf(size, 0, 0, 30.0f, 4, r, g, b);
+    drawGrassLeaf(size, 0, 0, -30.0f, 5, r, g, b);
+    drawGrassLeaf(size, 24.0f, 0, 30.0f, 6, r, g, b);
+    drawGrassLeaf(size, -24.0f, 0, -30.0f, 7, r, g, b);
+    drawGrassLeaf(size, 24.0f, 0, -30.0f, 8, r, g, b);
+    drawGrassLeaf(size, -24.0f, 0, 30.0f, 9, r, g, b);
+}
+
 void mainDisplayCallback(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -316,7 +353,7 @@ void drawStuff() {
     // Reset transformations
     glLoadIdentity();
     // Set the camera
-    gluLookAt(x, 1.0f, z,
+    gluLookAt(x, y, z,
         x + lx, y, z + lz,
         0.0f, 1.0f, 0.0f);
 
@@ -367,11 +404,35 @@ void drawStuff() {
     glTranslatef(25, 0, -10);
     drawSign("For Sale");
     glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(25, 0, -10);
+    drawSign("For Sale");
+    glPopMatrix();
+
+    // Grass (Performance killer, set grass = 0 if it's really laggy)
+    unsigned int grass = 10;
+    for (size_t i = 0; i < grass; i++)
+    {
+        srand(i);
+        float x = float((rand() % 100) - 50);
+        float z = float((rand() % 50) + 2);
+        glPushMatrix();
+        glTranslatef(x, 0, z);
+        drawGrass(0.25, i);
+        glPopMatrix();
+    }
 }
 
 void keyDown(unsigned char key, int x, int y) {
     if (key == 27)
         exit(0);
+    if (key == 32) {
+        if (!is_jumping) {
+            is_jumping = true;
+            on_ground = false;
+        }
+    }
 
     if (key == 'a') {		// look left
         is_left = true;
@@ -438,6 +499,13 @@ void specialUp(int key, int x, int y)
     }
 }
 
+void jump() {
+	if (jump_energy > 0) {
+		y += jump_force * jump_energy;
+		jump_energy -= 1;
+	}
+}
+
 void cameraHandler() {
     if (is_look_left) {
         angle -= x_sens;
@@ -474,6 +542,20 @@ void cameraHandler() {
         z -= -lx * speed;
 
     }
+
+    if (is_jumping) {
+	    jump();
+	}
+    // Gravity
+	if (!on_ground) {
+		y -= speed;
+	}
+    if (y <= 1.0f) {
+	    y = 1.0f;
+	    is_jumping = false;
+        on_ground = true;
+	    jump_energy = energy_max;
+	}
 }
 
 void changeSize(int w, int h)
@@ -481,7 +563,7 @@ void changeSize(int w, int h)
     // Prevent a divide by zero, when window is too short
     if (h == 0)
         h = 1;
-    float ratio = w * 1.0 / h;
+    float ratio = float(w * 1.0 / h);
 
     // Use the Projection Matrix
     glMatrixMode(GL_PROJECTION);
