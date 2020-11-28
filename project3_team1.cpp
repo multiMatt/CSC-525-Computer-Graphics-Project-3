@@ -19,6 +19,7 @@
     3.        Press Ctrl+F5                     to EXECUTE
 ==================================================================================================*/
 #include <iostream>
+#include <vector>
 #include <string>
 #include <GL/glut.h>
 #include <math.h>
@@ -49,6 +50,10 @@ double jump_speed = 0.15;
 void* font = GLUT_STROKE_ROMAN;
 GLfloat currentPosMatrix[16];
 
+// Plant Variables
+vector<vector<vector<float>>> plantMatrix;
+unsigned int number_of_plants = 20;
+
 // Text and Font Variables
 std::string draw_text;
 void* helvetica = GLUT_BITMAP_HELVETICA_18;
@@ -76,8 +81,10 @@ void specialUp(int key, int x, int y);
 void cameraHandler();
 void renderText();
 void drawText(std::string text, int x, int y, int rgb[3], void* font);
-void drawGrassLeaf(float size, float rotx, float roty, float rotz, int seed, float r, float g, float b);
 void drawLeaf(float size, float rotx, float roty, float rotz, int seed);
+void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_index, int index);
+void drawPlant(float size, int index);
+void createPlant(int seed);
 
 int main(int argc, char** argv)
 {
@@ -100,6 +107,12 @@ int main(int argc, char** argv)
     // OpenGL init
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.047f, 0.64f, 1.0f, 0);  // Background/Sky Color
+
+    // Plant init
+    for (size_t i = 0; i < number_of_plants; i++)
+    {
+        createPlant(i * rand());
+    }
 
     glutMainLoop();
 
@@ -220,20 +233,6 @@ void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
     glPopMatrix();
 }
 
-void drawGrassLeaf(float size, float rotx, float roty, float rotz, int seed, float r, float g, float b) {
-    std::srand(seed);
-    float offset = float(rand() % 5);
-    glPushMatrix();
-    glColor3ub(GLubyte(r - (rand() % 25)), GLubyte(g - (rand() % 25)), GLubyte(b - (rand() % 25)));
-    glTranslatef(0.0f, 0.0f, 0.0f);
-    glRotatef(rotx + offset, 1.0f, 0.0f, 0.0f);
-    glRotatef(roty + offset, 0.0f, 1.0f, 0.0f);
-    glRotatef(rotz + offset, 0.0f, 0.0f, 1.0f);
-    glScalef(.7f, 5.0f, 0.7f);
-    glutSolidSphere(size, 30, 30);
-    glPopMatrix();
-}
-
 void drawSpongebobHouse() { 
     GLUquadricObj* baseObj = gluNewQuadric();
     gluQuadricDrawStyle(baseObj, GLU_FILL);
@@ -324,22 +323,6 @@ void drawSign(string text) {
     glPopMatrix();
 }
 
-void drawGrass(float size, int seed) {
-    std::srand(seed);
-    float r = float(rand() % 255);
-    float g = float(rand() % 255);
-    float b = float(rand() % 255);
-    drawGrassLeaf(size, 0, 0, 0, 1, r, g, b);
-    drawGrassLeaf(size, 30.0f, 0, 0, 2, r, g, b);
-    drawGrassLeaf(size, -30.0f, 0, 0, 3, r, g, b);
-    drawGrassLeaf(size, 0, 0, 30.0f, 4, r, g, b);
-    drawGrassLeaf(size, 0, 0, -30.0f, 5, r, g, b);
-    drawGrassLeaf(size, 24.0f, 0, 30.0f, 6, r, g, b);
-    drawGrassLeaf(size, -24.0f, 0, -30.0f, 7, r, g, b);
-    drawGrassLeaf(size, 24.0f, 0, -30.0f, 8, r, g, b);
-    drawGrassLeaf(size, -24.0f, 0, 30.0f, 9, r, g, b);
-}
-
 void mainDisplayCallback(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -353,9 +336,17 @@ void drawStuff() {
     // Reset transformations
     glLoadIdentity();
     // Set the camera
-    gluLookAt(x, y, z,
-        x + lx, y, z + lz,
-        0.0f, 1.0f, 0.0f);
+    if (is_jumping) {
+        gluLookAt(x, y, z,
+            x + lx, y, z + lz,
+            0.0f, 1.0f, 0.0f);
+    }
+    else {
+        gluLookAt(x, 1.0f, z,
+            x + lx, y, z + lz,
+            0.0f, 1.0f, 0.0f);
+    }
+    
 
     // Draw ground
     glColor3ub(249, 213, 187);
@@ -410,16 +401,11 @@ void drawStuff() {
     drawSign("For Sale");
     glPopMatrix();
 
-    // Grass (Performance killer, set grass = 0 if it's really laggy)
-    unsigned int grass = 10;
-    for (size_t i = 0; i < grass; i++)
+    for (size_t i = 0; i < number_of_plants; i++)
     {
-        srand(i);
-        float x = float((rand() % 100) - 50);
-        float z = float((rand() % 50) + 2);
         glPushMatrix();
-        glTranslatef(x, 0, z);
-        drawGrass(0.25, i);
+        glTranslatef(plantMatrix[i][1][0], 0, plantMatrix[i][1][1]);
+        drawPlant(0.25, i);
         glPopMatrix();
     }
 }
@@ -596,7 +582,8 @@ void renderText() {
     drawText("Movement: Left - A", 785, 560, blackColor, helvetica);
     drawText("Movement: Right - D", 785, 540, blackColor, helvetica);
     drawText("Movement: Back - S", 785, 520, blackColor, helvetica);
-    drawText("Camera Look: Arrow Keys", 785, 500, blackColor, helvetica);
+    drawText("Jump: Spacebar", 785, 500, blackColor, helvetica);
+    drawText("Camera Look: Arrow Keys", 785, 480, blackColor, helvetica);
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -613,4 +600,70 @@ void drawText(std::string text, int x, int y, int rgb[3], void* font) {
 
     for (size_t i = 0; i < draw_text.length(); i++)
         glutBitmapCharacter(font, draw_text[i]);
+}
+
+void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_index, int index) {
+    float r = plantMatrix[parent_index][0][0];
+    float g = plantMatrix[parent_index][0][1];
+    float b = plantMatrix[parent_index][0][2];
+    float offset = plantMatrix[parent_index][index][0];
+    float r_rand = plantMatrix[parent_index][index][1];
+    float g_rand = plantMatrix[parent_index][index][2];
+    float b_rand = plantMatrix[parent_index][index][3];
+    glPushMatrix();
+    glColor3ub(GLubyte(r - r_rand), GLubyte(g - g_rand), GLubyte(b - b_rand));
+    glTranslatef(0.0f, 0.0f, 0.0f);
+    glRotatef(rotx + offset, 1.0f, 0.0f, 0.0f);
+    glRotatef(roty + offset, 0.0f, 1.0f, 0.0f);
+    glRotatef(rotz + offset, 0.0f, 0.0f, 1.0f);
+    glScalef(.7f, 5.0f, 0.7f);
+    glutSolidSphere(size, 30, 30);
+    glPopMatrix();
+}
+
+void createPlant(int seed) {
+    vector<vector<float>> plant;
+    vector<float> plant_color;
+    std::srand(seed);
+    float r = float(rand() % 255);
+    float g = float(rand() % 255);
+    float b = float(rand() % 255);
+    plant_color.push_back(r);
+    plant_color.push_back(g);
+    plant_color.push_back(b);
+    plant.push_back(plant_color);
+
+    vector<float> plant_pos;
+    float x = float((rand() % 100) - 100);
+    float z = float((rand() % 50) + 2);
+    plant_pos.push_back(x);
+    plant_pos.push_back(z);
+    plant.push_back(plant_pos);
+    for (size_t i = 0; i < 9; i++)
+    {
+        std::srand(i * seed);
+        vector<float> plant_entity;
+        float offset = float(rand() % 5);
+        plant_entity.push_back(offset);
+        float r_rand = float(rand() % 25);
+        float g_rand = float(rand() % 25);
+        float b_rand = float(rand() % 25);
+        plant_entity.push_back(r_rand);
+        plant_entity.push_back(g_rand);
+        plant_entity.push_back(b_rand);
+        plant.push_back(plant_entity);
+    }
+    plantMatrix.push_back(plant);
+}
+
+void drawPlant(float size, int index) {
+    drawPlantLeaf(size, 0, 0, 0, index, 2);
+    drawPlantLeaf(size, 30.0f, 0, 0, index, 3);
+    drawPlantLeaf(size, -30.0f, 0, 0, index, 4);
+    drawPlantLeaf(size, 0, 0, 30.0f, index, 5);
+    drawPlantLeaf(size, 0, 0, -30.0f, index, 6);
+    drawPlantLeaf(size, 24.0f, 0, 30.0f, index, 7);
+    drawPlantLeaf(size, -24.0f, 0, -30.0f, index, 8);
+    drawPlantLeaf(size, 24.0f, 0, -30.0f, index, 9);
+    drawPlantLeaf(size, -24.0f, 0, 30.0f, index, 10);
 }
