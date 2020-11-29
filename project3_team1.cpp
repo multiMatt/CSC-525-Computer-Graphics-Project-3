@@ -52,7 +52,7 @@ GLfloat currentPosMatrix[16];
 
 // Plant Variables
 vector<vector<vector<float>>> plantMatrix;
-unsigned int number_of_plants = 20;
+unsigned int number_of_plants = 200;
 
 // Text and Font Variables
 std::string draw_text;
@@ -229,7 +229,7 @@ void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
         glRotatef(roty, 0.0f, 1.0f, 0.0f);
         glRotatef(rotz, 0.0f, 0.0f, 1.0f);
         glScalef(.7f, 5.0f, 0.7f);
-        glutSolidSphere(size, 30, 30);
+        glutSolidSphere(size, 10, 10);
     glPopMatrix();
 }
 
@@ -617,8 +617,20 @@ void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_in
     glRotatef(roty + offset, 0.0f, 1.0f, 0.0f);
     glRotatef(rotz + offset, 0.0f, 0.0f, 1.0f);
     glScalef(.7f, 5.0f, 0.7f);
-    glutSolidSphere(size, 30, 30);
+    glutSolidSphere(size, 5, 5);
     glPopMatrix();
+}
+
+void drawPlant(float size, int index) {
+    drawPlantLeaf(size, 0, 0, 0, index, 2);
+    drawPlantLeaf(size, 30.0f, 0, 0, index, 3);
+    drawPlantLeaf(size, -30.0f, 0, 0, index, 4);
+    drawPlantLeaf(size, 0, 0, 30.0f, index, 5);
+    drawPlantLeaf(size, 0, 0, -30.0f, index, 6);
+    drawPlantLeaf(size, 24.0f, 0, 30.0f, index, 7);
+    drawPlantLeaf(size, -24.0f, 0, -30.0f, index, 8);
+    drawPlantLeaf(size, 24.0f, 0, -30.0f, index, 9);
+    drawPlantLeaf(size, -24.0f, 0, 30.0f, index, 10);
 }
 
 void createPlant(int seed) {
@@ -634,7 +646,7 @@ void createPlant(int seed) {
     plant.push_back(plant_color);
 
     vector<float> plant_pos;
-    float x = float((rand() % 100) - 100);
+    float x = float((rand() % 200) - 100);
     float z = float((rand() % 50) + 2);
     plant_pos.push_back(x);
     plant_pos.push_back(z);
@@ -654,16 +666,4 @@ void createPlant(int seed) {
         plant.push_back(plant_entity);
     }
     plantMatrix.push_back(plant);
-}
-
-void drawPlant(float size, int index) {
-    drawPlantLeaf(size, 0, 0, 0, index, 2);
-    drawPlantLeaf(size, 30.0f, 0, 0, index, 3);
-    drawPlantLeaf(size, -30.0f, 0, 0, index, 4);
-    drawPlantLeaf(size, 0, 0, 30.0f, index, 5);
-    drawPlantLeaf(size, 0, 0, -30.0f, index, 6);
-    drawPlantLeaf(size, 24.0f, 0, 30.0f, index, 7);
-    drawPlantLeaf(size, -24.0f, 0, -30.0f, index, 8);
-    drawPlantLeaf(size, 24.0f, 0, -30.0f, index, 9);
-    drawPlantLeaf(size, -24.0f, 0, 30.0f, index, 10);
 }
