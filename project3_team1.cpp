@@ -4,19 +4,31 @@
  DATE:                  12/7/20
  TEAM MEMBERS (CONTRIBUTION PERCENTAGE; SUBTASKS):
  -David Engleman        ()
- -Matthew Glenn         ()
+ -Matthew Glenn         (16.67%; created code)
  -Benjamin Pottebaum    ()
- -Niko Robbins          ()
+ -Niko Robbins          (16.67%; created code)
  -Tristan Tyler         (16.67%; created code)
  -Alicia Willard        ()
- DESCRIPTION:           
- NOTES:                 Must use C:\Temp as the location of the files or the root of the file hierarchy.
+ DESCRIPTION:           An interactive 3D rendering of Spongebob's neighborhood in Bikini Bottom
+                        where all residents are advertising to sell their houses. The user can move
+                        around using keyboard input.
+ NOTES:                 
  FILES:                 project3_team1.cpp, labProject.sln, freeglut.dll, glut.h, freeglut.lib
  IDE/COMPILER:          Microsoft Visual Studio 2019
  INSTRUCTION FOR COMPILATION AND EXECUTION:
-    1.        Double click on labProject.sln    to OPEN the project
-    2.        Press Ctrl+F7                     to COMPILE
-    3.        Press Ctrl+F5                     to EXECUTE
+    1.      Double click on labProject.sln      to OPEN the project
+    2.      Press Ctrl+F7                       to COMPILE
+    3.      Press Ctrl+F5                       to EXECUTE
+    4.      Press and hold the W key            to MOVE forward
+    OR      Press and hold the A key            to MOVE left
+    OR      Press and hold the S key            to MOVE back
+    OR      Press and hold the D key            to MOVE right
+    OR      Press the spacebar                  to JUMP
+    5.      Press and hold the 🡹 key           to LOOK up
+    OR      Press and hold the 🡸 key           to LOOK left
+    OR      Press and hold the 🡻 key           to LOOK down
+    OR      Press and hold the 🡺 key           to LOOK right
+    6.      Press the 'Escape' key              to TERMINATE the program
 ==================================================================================================*/
 #include <iostream>
 #include <vector>
@@ -26,11 +38,11 @@
 
 using namespace std;
 
-// actual vector representing the camera's direction
+// Actual vector representing the camera's direction
 float lx = 0.0f, lz = -1.0f;
 // XZ position of the camera
 float x = 0.0f, y = 1.0f, z = 5.0f;
-// angle of camera
+// Angle of camera
 float angle = 0.0f;
 // Camera x sensitivity
 float x_sens = 0.03f;
@@ -39,7 +51,7 @@ float y_sens = 0.02f;
 // Camera move speed
 float speed = 0.25f;
 
-// Movement Variables
+// Movement variables
 bool is_left, is_right, is_forward, is_backward, is_look_left, is_look_right, is_look_down, is_look_up = false;
 bool is_jumping = false;
 bool on_ground = true;
@@ -47,19 +59,17 @@ int jump_energy, energy_max = 25;
 double jump_force = 0.053;
 double jump_speed = 0.15;
 
-void* font = GLUT_STROKE_ROMAN;
-GLfloat currentPosMatrix[16];
-
-// Plant Variables
+// Plant variables
 vector<vector<vector<float>>> plantMatrix;
 unsigned int number_of_plants = 200;
 
-// Text and Font Variables
+// Text and font Variables
 std::string draw_text;
 void* helvetica = GLUT_BITMAP_HELVETICA_18;
 void* roman = GLUT_BITMAP_TIMES_ROMAN_24;
+void* font = GLUT_STROKE_ROMAN;
 
-// Color and alpha key variables
+// Color and alpha key variable
 int blackColor[3] = { 0, 0, 0 };
 
 // Window variables
@@ -85,17 +95,18 @@ void drawLeaf(float size, float rotx, float roty, float rotz, int seed);
 void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_index, int index);
 void drawPlant(float size, int index);
 void createPlant(int seed);
+void drawRock(GLfloat angle, double size, GLint smoothness);
 
-int main(int argc, char** argv)
-{
-    // init GLUT and create window
+
+int main(int argc, char** argv) {
+    // Initialize GLUT and create window
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
     glutInitWindowSize(windowWidth, windowHeight);
     glutCreateWindow("Project 3 - Team 1");
 
-    // register callbacks
+    // Register callbacks
     glutDisplayFunc(mainDisplayCallback);
     glutReshapeFunc(changeSize);
     glutKeyboardFunc(keyDown);
@@ -104,44 +115,43 @@ int main(int argc, char** argv)
     glutSpecialUpFunc(specialUp);
     glutTimerFunc(8, timerCallback, 123);
 
-    // OpenGL init
+    // OpenGL initilization
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.047f, 0.64f, 1.0f, 0);  // Background/Sky Color
+    glClearColor(0.047f, 0.64f, 1.0f, 0);  // Background/sky color
 
-    // Plant init
+    // Plant initilization
     for (size_t i = 0; i < number_of_plants; i++)
-    {
         createPlant(i * rand());
-    }
 
     glutMainLoop();
-
     return 1;
 }
 
-void timerCallback(int value)
-{
+
+void timerCallback(int value) {
     mainDisplayCallback();
     glutTimerFunc(8, timerCallback, 123);
 }
+
 
 void drawPatrickHouse() {
     glColor3ub(102, 18, 40);
     glutSolidSphere(5, 20, 20);
 }
 
+
 void drawSquidwardHouse() {
     GLUquadricObj* baseObj = gluNewQuadric();
     gluQuadricDrawStyle(baseObj, GLU_FILL);
 
-    // Base of House
+    // Base of house
     glPushMatrix();
         glColor3ub(8, 33, 93);
         glRotatef(-90.0f, 1.0f, 0, 0);
         gluCylinder(baseObj, 5, 4.0f, 15, 15, 15);
     glPopMatrix();
 
-    // Left Ear
+    // Left ear
     glPushMatrix();
         glColor3ub(37, 53, 103);
         glTranslatef(4.8f, 7.5f, 0.0f);
@@ -150,7 +160,7 @@ void drawSquidwardHouse() {
         glutSolidCube(1);
     glPopMatrix();
 
-    // Right Ear
+    // Right ear
     glPushMatrix();
         glColor3ub(37, 53, 103);
         glTranslatef(-4.8f, 7.5f, 0.0f);
@@ -185,7 +195,7 @@ void drawSquidwardHouse() {
         glutSolidCube(1);
     glPopMatrix();
 
-    // Left Eye
+    // Left eye
     glPushMatrix();
         glColor3ub(37, 53, 140);
         glTranslatef(2.0f, 8.5f, 4.0f);
@@ -193,7 +203,6 @@ void drawSquidwardHouse() {
         glScalef(1.0f, 1.0f, 2.0f);
         glutSolidTorus(0.25,0.95,20,20);
     glPopMatrix();
-
     glPushMatrix();
         glColor3ub(40, 60, 170);
         glTranslatef(2.0f, 8.5f, 4.0f);
@@ -201,7 +210,7 @@ void drawSquidwardHouse() {
         gluDisk(baseObj,0,1,20,20);
     glPopMatrix();
 
-    // Left Eye
+    // Right Eye
     glPushMatrix();
         glColor3ub(37, 53, 140);
         glTranslatef(-2.0f, 8.5f, 4.0f);
@@ -209,7 +218,6 @@ void drawSquidwardHouse() {
         glScalef(1.0f, 1.0f, 2.0f);
         glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
-
     glPushMatrix();
         glColor3ub(40, 60, 170);
         glTranslatef(-2.0f, 8.5f, 4.0f);
@@ -219,6 +227,7 @@ void drawSquidwardHouse() {
 
     gluDeleteQuadric(baseObj);
 }
+
 
 void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
     std::srand(seed);
@@ -232,6 +241,7 @@ void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
         glutSolidSphere(size, 10, 10);
     glPopMatrix();
 }
+
 
 void drawSpongebobHouse() { 
     GLUquadricObj* baseObj = gluNewQuadric();
@@ -262,7 +272,6 @@ void drawSpongebobHouse() {
         glScalef(1.0f, 1.0f, 1.0f);
         glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
-
     glPushMatrix();
         glColor3ub(40, 60, 170);
         glTranslatef(-2.1f, 6.5f, 3.75f);
@@ -278,7 +287,6 @@ void drawSpongebobHouse() {
         glScalef(1.0f, 1.0f, 1.0f);
         glutSolidTorus(0.25, 0.95, 20, 20);
     glPopMatrix();
-
     glPushMatrix();
         glColor3ub(40, 60, 170);
         glTranslatef(2.7f, 2.5f, 4.50f);
@@ -296,8 +304,8 @@ void drawSpongebobHouse() {
     drawLeaf(1.5, -24.0f, 0, -30.0f, 7);
     drawLeaf(1.5, 24.0f, 0, -30.0f, 8);
     drawLeaf(1.5, -24.0f, 0, 30.0f, 9);
-
 }
+
 
 void drawSign(string text) {
     glPushMatrix();
@@ -312,7 +320,6 @@ void drawSign(string text) {
         glScalef(1.75f, 0.5f, 0.3f);
         glutSolidCube(1);
     glPopMatrix();
-
     glPushMatrix();
         glColor3ub(0, 0, 0);
         glLineWidth(3);
@@ -323,8 +330,8 @@ void drawSign(string text) {
     glPopMatrix();
 }
 
-void mainDisplayCallback(void)
-{
+
+void mainDisplayCallback(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     cameraHandler();
     drawStuff();
@@ -332,87 +339,115 @@ void mainDisplayCallback(void)
     glutSwapBuffers();
 }
 
+
 void drawStuff() {
     // Reset transformations
     glLoadIdentity();
+
     // Set the camera
-    if (is_jumping) {
-        gluLookAt(x, y, z,
-            x + lx, y, z + lz,
-            0.0f, 1.0f, 0.0f);
-    }
-    else {
-        gluLookAt(x, 1.0f, z,
-            x + lx, y, z + lz,
-            0.0f, 1.0f, 0.0f);
-    }
-    
+    if (is_jumping)
+        gluLookAt(x, y, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
+    else
+        gluLookAt(x, 1.0f, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);    
 
     // Draw ground
     glColor3ub(249, 213, 187);
     glBegin(GL_QUADS);
-    glVertex3f(-1000.0f, 0.0f, -1000.0f);
-    glVertex3f(-1000.0f, 0.0f, 1000.0f);
-    glVertex3f(1000.0f, 0.0f, 1000.0f);
-    glVertex3f(1000.0f, 0.0f, -1000.0f);
+        glVertex3f(-1000.0f, 0.0f, -1000.0f);
+        glVertex3f(-1000.0f, 0.0f, 1000.0f);
+        glVertex3f(1000.0f, 0.0f, 1000.0f);
+        glVertex3f(1000.0f, 0.0f, -1000.0f);
     glEnd();
 
-    // Draw Road
+    // Draw road
     glColor3ub(160, 160, 160);
     glBegin(GL_QUADS);
-    glVertex3f(-1000.0f, 0.01f, -4.0f);
-    glVertex3f(-1000.0f, 0.01f, 4.0f);
-    glVertex3f(1000.0f, 0.01f, 4.0f);
-    glVertex3f(1000.0f, 0.01f, -4.0f);
+        glVertex3f(-1000.0f, 0.01f, -4.0f);
+        glVertex3f(-1000.0f, 0.01f, 4.0f);
+        glVertex3f(1000.0f, 0.01f, 4.0f);
+        glVertex3f(1000.0f, 0.01f, -4.0f);
     glEnd();
     
+    // Draw Patrick's house
     glPushMatrix();
-    glTranslatef(-15, 0, -40);
-    drawPatrickHouse();
+        glTranslatef(-15, 0, -40);
+        drawPatrickHouse();
     glPopMatrix();
 
+    // Draw Squidward's house
     glPushMatrix();
-    glTranslatef(5, 0, -40);
-    drawSquidwardHouse();
+        glTranslatef(5, 0, -40);
+        drawSquidwardHouse();
     glPopMatrix();
 
+    // Draw Spongebob's house
     glPushMatrix();
-    glTranslatef(25, 0, -40);
-    drawSpongebobHouse();
+        glTranslatef(25, 0, -40);
+        drawSpongebobHouse();
     glPopMatrix();
 
+    // "For Sale" signs
     glPushMatrix();
-    glTranslatef(-15, 0, -10);
-    drawSign("For Sale");
+        glTranslatef(-15, 0, -10);
+        drawSign("For Sale");
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(5, 0, -10);
+        drawSign("For Sale");
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(25, 0, -10);
+        drawSign("For Sale");
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(25, 0, -10);
+        drawSign("For Sale");
     glPopMatrix();
 
-    glPushMatrix();
-    glTranslatef(5, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(25, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(25, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-
-    for (size_t i = 0; i < number_of_plants; i++)
-    {
+    // Plants
+    for (size_t i = 0; i < number_of_plants; i++) {
         glPushMatrix();
-        glTranslatef(plantMatrix[i][1][0], 0, plantMatrix[i][1][1]);
-        drawPlant(0.25, i);
+            glTranslatef(plantMatrix[i][1][0], 0, plantMatrix[i][1][1]);
+            drawPlant(0.25, i);
         glPopMatrix();
     }
+
+    // Rocks
+    glPushMatrix();
+        glTranslatef(35, 0, 10);
+        drawRock(0, 0.33, 5);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(-25, 0, 5.25);
+        drawRock(20.0f, 0.5, 8);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(-1, 0, -40);
+        drawRock(40.0f, 0.33, 5);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(18.5, 0, -20);
+        drawRock(60.0f, 0.25, 5);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(18, 0, -18);
+        drawRock(80.0f, 0.33, 5);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(11.5, 0, -50);
+        drawRock(100.0f, 0.25, 8);
+    glPopMatrix();
+    glPushMatrix();
+        glTranslatef(-8, 0, -5);
+        drawRock(120.0f, 0.25, 5);
+    glPopMatrix();
 }
+
 
 void keyDown(unsigned char key, int x, int y) {
     if (key == 27)
         exit(0);
+
     if (key == 32) {
         if (!is_jumping) {
             is_jumping = true;
@@ -420,70 +455,64 @@ void keyDown(unsigned char key, int x, int y) {
         }
     }
 
-    if (key == 'a') {		// look left
+    if (key == 'a')		    // Look left
         is_left = true;
-    }
-    else if (key == 'd') {	// look right
+    else if (key == 'd')	// Look right
         is_right = true;
-    }
-    else if (key == 'w') {	// Move forward
+    else if (key == 'w')	// Move forward
         is_forward = true;
-    }
-    else if (key == 's') {	// Move backward
+    else if (key == 's')    // Move backward
         is_backward = true;
-    }
 }
+
 
 void keyUp(unsigned char key, int x, int y) {
-    if (key == 'a') {		// Stop looking left
+    if (key == 'a')		    // Stop looking left
         is_left = false;
-    }
-    else if (key == 'd') {	// Stop looking right
+    else if (key == 'd')	// Stop looking right
         is_right = false;
-    }
-    else if (key == 'w') {	// Stop moving forward
+    else if (key == 'w')	// Stop moving forward
         is_forward = false;
-    }
-    else if (key == 's') {	// Stop moving backward
+    else if (key == 's')    // Stop moving backward
         is_backward = false;
+}
+
+
+void specialDown(int key, int x, int y) {
+    switch (key) {
+    case GLUT_KEY_LEFT:
+        is_look_left = true;    // Look left
+        break;
+    case GLUT_KEY_RIGHT:
+        is_look_right = true;   // Look right
+        break;
+    case GLUT_KEY_UP:
+        is_look_up = true;      // Move forward
+        break;
+    case GLUT_KEY_DOWN:
+        is_look_down = true;    // Move backward
+        break;
     }
 }
 
-void specialDown(int key, int x, int y)
-{
+
+void specialUp(int key, int x, int y) {
     switch (key) {
     case GLUT_KEY_LEFT:
-        is_look_left = true;        // look left
+        is_look_left = false;   // Stop looking left
         break;
     case GLUT_KEY_RIGHT:
-        is_look_right = true;       // look right
+        is_look_right = false;  // Stop looking right
         break;
     case GLUT_KEY_UP:
-        is_look_up = true;          // move forward
+        is_look_up = false;     // Stop moving forward
         break;
     case GLUT_KEY_DOWN:
-        is_look_down = true;        // move backward
+        is_look_down = false;   // Stop moving backward
         break;
     }
 }
 
-void specialUp(int key, int x, int y)
-{
-    switch (key) {
-    case GLUT_KEY_LEFT:
-        is_look_left = false;        // stop look left
-        break;
-    case GLUT_KEY_RIGHT:
-        is_look_right = false;       // stop look right
-        break;
-    case GLUT_KEY_UP:
-        is_look_up = false;          // stop move forward
-        break;
-    case GLUT_KEY_DOWN:
-        is_look_down = false;        // stop move backward
-        break;
-    }
-}
 
 void jump() {
 	if (jump_energy > 0) {
@@ -491,6 +520,7 @@ void jump() {
 		jump_energy -= 1;
 	}
 }
+
 
 void cameraHandler() {
     if (is_look_left) {
@@ -504,12 +534,10 @@ void cameraHandler() {
         lz = -cos(angle);
     }
 
-    if (is_look_up) {
+    if (is_look_up)
         y += y_sens;
-    }
-    else if (is_look_down) {
+    else if (is_look_down)
         y -= y_sens;
-    }
 
     if (is_forward) {
         x += lx * speed;
@@ -519,6 +547,7 @@ void cameraHandler() {
         x -= lx * speed;
         z -= lz * speed;
     }
+
     if (is_left) {
         x += lz * speed;
         z += -lx * speed;
@@ -529,13 +558,13 @@ void cameraHandler() {
 
     }
 
-    if (is_jumping) {
+    if (is_jumping)
 	    jump();
-	}
+
     // Gravity
-	if (!on_ground) {
+	if (!on_ground)
 		y -= speed;
-	}
+
     if (y <= 1.0f) {
 	    y = 1.0f;
 	    is_jumping = false;
@@ -544,28 +573,30 @@ void cameraHandler() {
 	}
 }
 
-void changeSize(int w, int h)
-{
-    // Prevent a divide by zero, when window is too short
+
+void changeSize(int w, int h) {
+    // Prevent division by zero when the window is too short
     if (h == 0)
         h = 1;
+
     float ratio = float(w * 1.0 / h);
 
-    // Use the Projection Matrix
+    // Use the projection matrix
     glMatrixMode(GL_PROJECTION);
 
-    // Reset Matrix
+    // Reset matrix
     glLoadIdentity();
 
     // Set the viewport to be the entire window
     glViewport(0, 0, w, h);
 
-    // Set the correct perspective.
+    // Set the correct perspective
     gluPerspective(45.0f, ratio, 0.1f, 100.0f);
 
-    // Get Back to the Modelview
+    // Get back to the modelview
     glMatrixMode(GL_MODELVIEW);
 }
+
 
 // Draws text displayed on screen
 void renderText() {
@@ -578,12 +609,19 @@ void renderText() {
     glPushMatrix();
     glLoadIdentity();
 
-    drawText("Movement: Forward - W", 785, 580, blackColor, helvetica);
-    drawText("Movement: Left - A", 785, 560, blackColor, helvetica);
-    drawText("Movement: Right - D", 785, 540, blackColor, helvetica);
-    drawText("Movement: Back - S", 785, 520, blackColor, helvetica);
-    drawText("Jump: Spacebar", 785, 500, blackColor, helvetica);
-    drawText("Camera Look: Arrow Keys", 785, 480, blackColor, helvetica);
+    drawText("Movement:", 5, 580, blackColor, helvetica);
+    drawText("Forward -- ", 21, 558, blackColor, helvetica);
+    drawText("W", 120, 558, blackColor, helvetica);
+    drawText("Left ----- ", 21, 538, blackColor, helvetica);
+    drawText("A", 122, 538, blackColor, helvetica);
+    drawText("Back ---- ", 21, 518, blackColor, helvetica);
+    drawText("S", 122, 518, blackColor, helvetica);
+    drawText("Right ---- ", 21, 498, blackColor, helvetica);
+    drawText("D", 122, 498, blackColor, helvetica);
+    drawText("Jump ---- ", 20, 478, blackColor, helvetica);
+    drawText("Spacebar", 122, 478, blackColor, helvetica);
+    drawText("Camera View: Arrow Keys", 5, 453, blackColor, helvetica);
+    drawText("Quit Program: Escape", 5, 428, blackColor, helvetica);
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -592,15 +630,16 @@ void renderText() {
     glEnable(GL_TEXTURE_2D);
 }
 
+
 // Text function
 void drawText(std::string text, int x, int y, int rgb[3], void* font) {
     draw_text = text;
     glColor3ub(rgb[0], rgb[1], rgb[2]);
     glRasterPos2i(x, y);
-
     for (size_t i = 0; i < draw_text.length(); i++)
         glutBitmapCharacter(font, draw_text[i]);
 }
+
 
 void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_index, int index) {
     float r = plantMatrix[parent_index][0][0];
@@ -610,16 +649,18 @@ void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_in
     float r_rand = plantMatrix[parent_index][index][1];
     float g_rand = plantMatrix[parent_index][index][2];
     float b_rand = plantMatrix[parent_index][index][3];
+
     glPushMatrix();
-    glColor3ub(GLubyte(r - r_rand), GLubyte(g - g_rand), GLubyte(b - b_rand));
-    glTranslatef(0.0f, 0.0f, 0.0f);
-    glRotatef(rotx + offset, 1.0f, 0.0f, 0.0f);
-    glRotatef(roty + offset, 0.0f, 1.0f, 0.0f);
-    glRotatef(rotz + offset, 0.0f, 0.0f, 1.0f);
-    glScalef(.7f, 5.0f, 0.7f);
-    glutSolidSphere(size, 5, 5);
+        glColor3ub(GLubyte(r - r_rand), GLubyte(g - g_rand), GLubyte(b - b_rand));
+        glTranslatef(0.0f, 0.0f, 0.0f);
+        glRotatef(rotx + offset, 1.0f, 0.0f, 0.0f);
+        glRotatef(roty + offset, 0.0f, 1.0f, 0.0f);
+        glRotatef(rotz + offset, 0.0f, 0.0f, 1.0f);
+        glScalef(.7f, 5.0f, 0.7f);
+        glutSolidSphere(size, 5, 5);
     glPopMatrix();
 }
+
 
 void drawPlant(float size, int index) {
     drawPlantLeaf(size, 0, 0, 0, index, 2);
@@ -633,6 +674,7 @@ void drawPlant(float size, int index) {
     drawPlantLeaf(size, -24.0f, 0, 30.0f, index, 10);
 }
 
+
 void createPlant(int seed) {
     vector<vector<float>> plant;
     vector<float> plant_color;
@@ -644,15 +686,14 @@ void createPlant(int seed) {
     plant_color.push_back(g);
     plant_color.push_back(b);
     plant.push_back(plant_color);
-
     vector<float> plant_pos;
     float x = float((rand() % 200) - 100);
-    float z = float((rand() % 50) + 2);
+    float z = float((rand() % 50) + 5);
     plant_pos.push_back(x);
     plant_pos.push_back(z);
     plant.push_back(plant_pos);
-    for (size_t i = 0; i < 9; i++)
-    {
+
+    for (size_t i = 0; i < 9; i++) {
         std::srand(i * seed);
         vector<float> plant_entity;
         float offset = float(rand() % 5);
@@ -666,4 +707,13 @@ void createPlant(int seed) {
         plant.push_back(plant_entity);
     }
     plantMatrix.push_back(plant);
+}
+
+
+void drawRock(GLfloat angle, double size, GLint smoothness) {
+    glPushMatrix();
+        glColor3ub(47, 79, 79);        
+        glRotatef(angle, 1.0f, 0, 0);
+        glutSolidSphere(size, smoothness, smoothness);
+    glPopMatrix();
 }
