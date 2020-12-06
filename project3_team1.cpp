@@ -1,4 +1,4 @@
-﻿/*==================================================================================================
+/*==================================================================================================
  COURSE:                CSC 525/625
  ASSIGNMENT:            Project 3
  DATE:                  12/7/20
@@ -8,11 +8,11 @@
  -Benjamin Pottebaum    ()
  -Niko Robbins          (16.67%; created code)
  -Tristan Tyler         (16.67%; created code)
- -Alicia Willard        ()
+ -Alicia Willard        (16.67%; created code)
  DESCRIPTION:           An interactive 3D rendering of Spongebob's neighborhood in Bikini Bottom
                         where all residents are advertising to sell their houses. The user can move
                         around using keyboard input.
- NOTES:                 
+ NOTES:
  FILES:                 project3_team1.cpp, labProject.sln, freeglut.dll, glut.h, freeglut.lib
  IDE/COMPILER:          Microsoft Visual Studio 2019
  INSTRUCTION FOR COMPILATION AND EXECUTION:
@@ -55,6 +55,9 @@ float speed = 0.25f;
 bool is_left, is_right, is_forward, is_backward, is_look_left, is_look_right, is_look_down, is_look_up = false;
 bool is_jumping = false;
 bool on_ground = true;
+bool byPatrickHouse = false;
+bool bySquidwardHouse = false;
+bool bySpongebobHouse = false;
 int jump_energy, energy_max = 25;
 double jump_force = 0.053;
 double jump_speed = 0.15;
@@ -71,6 +74,7 @@ void* font = GLUT_STROKE_ROMAN;
 
 // Color and alpha key variable
 int blackColor[3] = { 0, 0, 0 };
+int whiteColor[3] = { 255, 255, 255 };
 
 // Window variables
 int windowWidth = 1000;
@@ -96,6 +100,8 @@ void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_in
 void drawPlant(float size, int index);
 void createPlant(int seed);
 void drawRock(GLfloat angle, double size, GLint smoothness);
+void checkByHouses();
+void drawSaleInfoSign();
 
 
 int main(int argc, char** argv) {
@@ -243,7 +249,7 @@ void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
 }
 
 
-void drawSpongebobHouse() { 
+void drawSpongebobHouse() {
     GLUquadricObj* baseObj = gluNewQuadric();
     gluQuadricDrawStyle(baseObj, GLU_FILL);
 
@@ -348,8 +354,10 @@ void drawStuff() {
     if (is_jumping)
         gluLookAt(x, y, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
     else
-        gluLookAt(x, 1.0f, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);    
+        gluLookAt(x, 1.0f, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
 
+    checkByHouses();
+    
     // Draw ground
     glColor3ub(249, 213, 187);
     glBegin(GL_QUADS);
@@ -455,11 +463,11 @@ void keyDown(unsigned char key, int x, int y) {
         }
     }
 
-    if (key == 'a')		    // Look left
+    if (key == 'a')            // Look left
         is_left = true;
-    else if (key == 'd')	// Look right
+    else if (key == 'd')    // Look right
         is_right = true;
-    else if (key == 'w')	// Move forward
+    else if (key == 'w')    // Move forward
         is_forward = true;
     else if (key == 's')    // Move backward
         is_backward = true;
@@ -467,11 +475,11 @@ void keyDown(unsigned char key, int x, int y) {
 
 
 void keyUp(unsigned char key, int x, int y) {
-    if (key == 'a')		    // Stop looking left
+    if (key == 'a')            // Stop looking left
         is_left = false;
-    else if (key == 'd')	// Stop looking right
+    else if (key == 'd')    // Stop looking right
         is_right = false;
-    else if (key == 'w')	// Stop moving forward
+    else if (key == 'w')    // Stop moving forward
         is_forward = false;
     else if (key == 's')    // Stop moving backward
         is_backward = false;
@@ -515,10 +523,10 @@ void specialUp(int key, int x, int y) {
 
 
 void jump() {
-	if (jump_energy > 0) {
-		y += jump_force * jump_energy;
-		jump_energy -= 1;
-	}
+    if (jump_energy > 0) {
+        y += jump_force * jump_energy;
+        jump_energy -= 1;
+    }
 }
 
 
@@ -559,18 +567,18 @@ void cameraHandler() {
     }
 
     if (is_jumping)
-	    jump();
+        jump();
 
     // Gravity
-	if (!on_ground)
-		y -= speed;
+    if (!on_ground)
+        y -= speed;
 
     if (y <= 1.0f) {
-	    y = 1.0f;
-	    is_jumping = false;
+        y = 1.0f;
+        is_jumping = false;
         on_ground = true;
-	    jump_energy = energy_max;
-	}
+        jump_energy = energy_max;
+    }
 }
 
 
@@ -622,6 +630,36 @@ void renderText() {
     drawText("Spacebar", 122, 478, blackColor, helvetica);
     drawText("Camera View: Arrow Keys", 5, 453, blackColor, helvetica);
     drawText("Quit Program: Escape", 5, 428, blackColor, helvetica);
+    
+    if (byPatrickHouse) {
+        drawText("Home for sale: Patrick's Home", 10, 140, whiteColor, roman);
+        drawText("Estimate: $7.00", 10, 115, whiteColor, roman);
+        drawText("Address: 120 Conch Street", 10, 90, whiteColor, roman);
+        drawText("Realtor: Mr. Krabs", 10, 65, whiteColor, roman);
+        drawText("Contact info: 1-417-816-KRAB", 10, 40, whiteColor, roman);
+        drawText("Comments: It's a rock.", 10, 15, whiteColor, roman);
+        drawSaleInfoSign();
+    }
+    
+    if (bySquidwardHouse) {
+        drawText("Home for sale: Squidward's Home", 10, 140, whiteColor, roman);
+        drawText("Estimate: $1,000,000.00", 10, 115, whiteColor, roman);
+        drawText("Address: 122 Conch Street", 10, 90, whiteColor, roman);
+        drawText("Realtor: Mr. Krabs", 10, 65, whiteColor, roman);
+        drawText("Contact info: 1-417-816-KRAB", 10, 40, whiteColor, roman);
+        drawText("Comments: Clarinetists only.", 10, 15, whiteColor, roman);
+        drawSaleInfoSign();
+    }
+    
+    if (bySpongebobHouse) {
+        drawText("Home for sale: Spongebob's Home", 10, 140, whiteColor, roman);
+        drawText("Estimate: $1,000.00", 10, 115, whiteColor, roman);
+        drawText("Address: 124 Conch Street", 10, 90, whiteColor, roman);
+        drawText("Realtor: Mr. Krabs", 10, 65, whiteColor, roman);
+        drawText("Contact info: 1-417-816-KRAB", 10, 40, whiteColor, roman);
+        drawText("Comments: Beware Gary the Snail.", 10, 15, whiteColor, roman);
+        drawSaleInfoSign();
+    }
 
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
@@ -630,6 +668,16 @@ void renderText() {
     glEnable(GL_TEXTURE_2D);
 }
 
+void drawSaleInfoSign() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBegin(GL_POLYGON);
+    glColor3d(1.00, 0.0, 0.0);
+    glVertex2f(GLfloat(5), GLfloat(5));
+    glVertex2f(GLfloat(5), GLfloat(160));
+    glVertex2f(GLfloat(380), GLfloat(160));
+    glVertex2f(GLfloat(380), GLfloat(5));
+    glEnd();
+}
 
 // Text function
 void drawText(std::string text, int x, int y, int rgb[3], void* font) {
@@ -712,8 +760,27 @@ void createPlant(int seed) {
 
 void drawRock(GLfloat angle, double size, GLint smoothness) {
     glPushMatrix();
-        glColor3ub(47, 79, 79);        
+        glColor3ub(47, 79, 79);
         glRotatef(angle, 1.0f, 0, 0);
         glutSolidSphere(size, smoothness, smoothness);
     glPopMatrix();
 }
+
+void checkByHouses() {
+    byPatrickHouse = false;
+    bySquidwardHouse = false;
+    bySpongebobHouse = false;
+    
+    if (x > -20 && x < -10 && z > -35 && z < -25) {
+        byPatrickHouse = true;
+    }
+    
+    if (x > 0 && x < 10 && z > -35 && z < -25) {
+        bySquidwardHouse = true;
+    }
+    
+    if (x > 20 && x < 30 && z > -35 && z < -25) {
+        bySpongebobHouse = true;
+    }
+}
+
