@@ -618,9 +618,9 @@ void keyDown(unsigned char key, int x, int y) {
 
 
 void keyUp(unsigned char key, int x, int y) {
-    if (key == 'a')         // Stop looking left
+    if (key == 'a')         // Stop moving left
         is_left = false;
-    else if (key == 'd')    // Stop looking right
+    else if (key == 'd')    // Stop moving right
         is_right = false;
     else if (key == 'w')    // Stop moving forward
         is_forward = false;
@@ -638,10 +638,10 @@ void specialDown(int key, int x, int y) {
         is_look_right = true;   // Look right
         break;
     case GLUT_KEY_UP:
-        is_look_up = true;      // Move forward
+        is_look_up = true;      // Look up
         break;
     case GLUT_KEY_DOWN:
-        is_look_down = true;    // Move backward
+        is_look_down = true;    // Look down
         break;
     }
 }
@@ -656,10 +656,10 @@ void specialUp(int key, int x, int y) {
         is_look_right = false;  // Stop looking right
         break;
     case GLUT_KEY_UP:
-        is_look_up = false;     // Stop moving forward
+        is_look_up = false;     // Stop looking up
         break;
     case GLUT_KEY_DOWN:
-        is_look_down = false;   // Stop moving backward
+        is_look_down = false;   // Stop looking down
         break;
     }
 }
