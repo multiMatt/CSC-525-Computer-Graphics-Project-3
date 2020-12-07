@@ -11,8 +11,8 @@
  -Alicia Willard        (16.67%; created code)
  DESCRIPTION:           An interactive 3D rendering of Spongebob's neighborhood in Bikini Bottom
                         where all residents are advertising to sell their houses. The user can move
-                        around using keyboard input.
- NOTES:
+                        around using keyboard input. Depending on the stacks of cash found, the
+                        user can purchase a house.
  FILES:                 project3_team1.cpp, labProject.sln, freeglut.dll, glut.h, freeglut.lib
  IDE/COMPILER:          Microsoft Visual Studio 2019
  INSTRUCTION FOR COMPILATION AND EXECUTION:
@@ -28,7 +28,8 @@
     OR      Press and hold the 🡸 key           to LOOK left
     OR      Press and hold the 🡻 key           to LOOK down
     OR      Press and hold the 🡺 key           to LOOK right
-    6.      Press the 'Escape' key              to TERMINATE the program
+    6.      Press the 'Enter' key               to PURCHASE a house
+    7.      Press the 'Escape' key              to TERMINATE the program
 ==================================================================================================*/
 #include <iostream>
 #include <vector>
@@ -66,13 +67,13 @@ double jump_speed = 0.15;
 vector<vector<vector<float>>> plantMatrix;
 unsigned int number_of_plants = 200;
 
-// Text and font Variables
+// Text and font variables
 std::string draw_text;
 void* helvetica = GLUT_BITMAP_HELVETICA_18;
 void* roman = GLUT_BITMAP_TIMES_ROMAN_24;
 void* font = GLUT_STROKE_ROMAN;
 
-// Color and alpha key variable
+// Color and alpha key variables
 int blackColor[3] = { 0, 0, 0 };
 int whiteColor[3] = { 255, 255, 255 };
 
@@ -88,6 +89,7 @@ bool stack3_collision = false;
 bool stack4_collision = false;
 bool secretstack_collision = false;
 
+// House sold variables
 bool spongebob_sold = false;
 bool patrick_sold = false;
 bool squidward_sold = false;
@@ -185,7 +187,7 @@ void drawStuff() {
     glVertex3f(1000.0f, 0.0f, -1000.0f);
     glEnd();
 
-    // Draw road
+    // Draw street road
     glColor3ub(160, 160, 160);
     glBegin(GL_QUADS);
     glVertex3f(-1000.0f, 0.01f, -4.0f);
@@ -194,7 +196,7 @@ void drawStuff() {
     glVertex3f(1000.0f, 0.01f, -4.0f);
     glEnd();
 
-    //Road to Squidward's House
+    // Road to Squidward's House
     glColor3ub(50, 50, 50);
     glBegin(GL_QUADS);
     glVertex3f(2.0f, 0.02f, -35.0f);
@@ -224,7 +226,7 @@ void drawStuff() {
     glVertex3f(2.0f, 0.02f, -7.0f);
     glEnd();
 
-    //Road to Patrick's House
+    // Road to Patrick's House
     glColor3ub(50, 50, 50);
     glBegin(GL_QUADS);
     glVertex3f(-17.5f, 0.02f, -36.0f);
@@ -233,7 +235,7 @@ void drawStuff() {
     glVertex3f(-17.5f, 0.02f, -3.9f);
     glEnd();
 
-    //Road to Spongebob's House
+    // Road to Spongebob's House
     glColor3ub(50, 50, 50);
     glBegin(GL_QUADS);
     glVertex3f(23.0f, 0.02f, -35.0f);
@@ -259,6 +261,7 @@ void drawStuff() {
     glTranslatef(25, 0, -40);
     drawSpongebobHouse();
     glPopMatrix();
+
     // "For Sale" signs
     if (!patrick_sold) {
         glPushMatrix();
@@ -278,6 +281,7 @@ void drawStuff() {
         drawSign("For Sale");
         glPopMatrix();
     }
+
     glPushMatrix();
     glTranslatef(1100, 0, 0);
     drawSign("EasterEgg");
@@ -322,7 +326,7 @@ void drawStuff() {
     glPopMatrix();
 
     // Money
-    // Stack1
+    // Stack 1
     if (!stack1_collision) {
         glPushMatrix();
         glColor3ub(15, 78, 12);
@@ -332,7 +336,7 @@ void drawStuff() {
         glutSolidCube(0.47);
         glPopMatrix();
     }
-    // Stack2
+    // Stack 2
     if (!stack2_collision) {
         glPushMatrix();
         glColor3ub(15, 78, 12);
@@ -342,7 +346,7 @@ void drawStuff() {
         glutSolidCube(0.47);
         glPopMatrix();
     }
-    // Stack3
+    // Stack 3
     if (!stack3_collision) {
         glPushMatrix();
         glColor3ub(15, 78, 12);
@@ -352,7 +356,7 @@ void drawStuff() {
         glutSolidCube(0.47);
         glPopMatrix();
     }
-    // Stack4
+    // Stack 4
     if (!stack4_collision) {
         glPushMatrix();
         glColor3ub(15, 78, 12);
@@ -362,7 +366,7 @@ void drawStuff() {
         glutSolidCube(0.47);
         glPopMatrix();
     }
-    // Shhh
+    // Secret Stash
     if (!secretstack_collision) {
         glPushMatrix();
         glColor3ub(15, 78, 12);
@@ -372,7 +376,6 @@ void drawStuff() {
         glutSolidCube(0.47);
         glPopMatrix();
     }
-
 }
 
 
@@ -585,7 +588,7 @@ void keyDown(unsigned char key, int x, int y) {
         }
     }
 
-    if (key == 'a')            // Look left
+    if (key == 'a')         // Look left
         is_left = true;
     else if (key == 'd')    // Look right
         is_right = true;
@@ -615,7 +618,7 @@ void keyDown(unsigned char key, int x, int y) {
 
 
 void keyUp(unsigned char key, int x, int y) {
-    if (key == 'a')            // Stop looking left
+    if (key == 'a')         // Stop looking left
         is_left = false;
     else if (key == 'd')    // Stop looking right
         is_right = false;
@@ -769,9 +772,9 @@ void renderText() {
     drawText("Jump ---- ", 20, 478, blackColor, helvetica);
     drawText("Spacebar", 122, 478, blackColor, helvetica);
     drawText("Camera View: Arrow Keys", 5, 453, blackColor, helvetica);
-    drawText("Purchase House: Enter", 5, 438, blackColor, helvetica);
-    drawText("Quit Program: Escape", 5, 413, blackColor, helvetica);
-    drawText("Funds: $" + to_string(funds), 5, 328, blackColor, helvetica);
+    drawText("Purchase House: Enter", 5, 428, blackColor, helvetica);
+    drawText("Quit Program: Escape", 5, 403, blackColor, helvetica);
+    drawText("Funds: $" + to_string(funds), 5, 353, blackColor, helvetica);
 
     if (byPatrickHouse) {
         drawText("Home for sale: Patrick's Home", 10, 140, whiteColor, roman);
@@ -811,7 +814,7 @@ void renderText() {
 }
 
 
-// Function for drawing the advertisement info for each house
+// Draws the advertisement info for each house
 void drawSaleInfoSign() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
@@ -822,6 +825,7 @@ void drawSaleInfoSign() {
     glVertex2f(GLfloat(380), GLfloat(5));
     glEnd();
 }
+
 
 // Text function
 void drawText(std::string text, int x, int y, int rgb[3], void* font) {
@@ -901,6 +905,7 @@ void createPlant(int seed) {
         plant_entity.push_back(b_rand);
         plant.push_back(plant_entity);
     }
+
     plantMatrix.push_back(plant);
 }
 
@@ -921,53 +926,50 @@ void checkByHouses() {
     bySquidwardHouse = false;
     bySpongebobHouse = false;
 
-    if (x > -20 && x < -10 && z > -35 && z < -25) {
+    if (x > -20 && x < -10 && z > -35 && z < -25)
         byPatrickHouse = true;
-    }
-
-    if (x > 0 && x < 10 && z > -35 && z < -25) {
+    if (x > 0 && x < 10 && z > -35 && z < -25)
         bySquidwardHouse = true;
-    }
-
-    if (x > 20 && x < 30 && z > -35 && z < -25) {
+    if (x > 20 && x < 30 && z > -35 && z < -25)
         bySpongebobHouse = true;
-    }
 }
 
+
+// Checks if a the user is near a specifc wad of cash based on X and Z ranges
 void checkMoneyCollision() {
-    // Stack1 -6 -5
+    // Stack 1
     if (x >= -7 && x <= -5 && z >= -4 && z <= -3) {
-        if (!stack1_collision) {
+        if (!stack1_collision)
             funds += 250;
-        }
+        
         stack1_collision = true;
     }
-    // Stack2 -16 -15
+    // Stack 2
     if (x >= -17 && x <= -14 && z >= -16 && z <= -14) {
-        if (!stack2_collision) {
+        if (!stack2_collision) 
             funds += 250;
-        }
+        
         stack2_collision = true;
     }
-    // Stack3 -22 -40
+    // Stack 3
     if (x >= -23 && x <= -21 && z >= -41 && z <= -39) {
-        if (!stack3_collision) {
+        if (!stack3_collision)
             funds += 250;
-        }
+
         stack3_collision = true;
     }
-    // Stack4 -42 -36
+    // Stack 4
     if (x >= -43 && x <= -41 && z >= -37 && z <= -35) {
-        if (!stack4_collision) {
+        if (!stack4_collision)
             funds += 250;
-        }
+
         stack4_collision = true;
     }
-    // SecretStack 3 -40
+    // Secret Stack
     if (x >= 2 && x <= 4 && z >= -41 && z <= -39) {
-        if (!secretstack_collision) {
+        if (!secretstack_collision)
             funds += 1000000;
-        }
+
         secretstack_collision = true;
     }
 }
