@@ -5,7 +5,7 @@
  TEAM MEMBERS (CONTRIBUTION PERCENTAGE; SUBTASKS):
  -David Engleman        (16.67%; created code)
  -Matthew Glenn         (16.67%; created code)
- -Benjamin Pottebaum    ()
+ -Benjamin Pottebaum    (16.67%; created code)
  -Niko Robbins          (16.67%; created code)
  -Tristan Tyler         (16.67%; created code)
  -Alicia Willard        (16.67%; created code)
@@ -80,6 +80,18 @@ int whiteColor[3] = { 255, 255, 255 };
 int windowWidth = 1000;
 int windowHeight = 600;
 
+// Currency
+int funds = 6;
+bool stack1_collision = false;
+bool stack2_collision = false;
+bool stack3_collision = false;
+bool stack4_collision = false;
+bool secretstack_collision = false;
+
+bool spongebob_sold = false;
+bool patrick_sold = false;
+bool squidward_sold = false;
+
 // Prototypes
 void changeSize(int w, int h);
 void mainDisplayCallback(void);
@@ -103,6 +115,7 @@ void createPlant(int seed);
 void drawRock(GLfloat angle, double size, GLint smoothness);
 void checkByHouses();
 void drawSaleInfoSign();
+void checkMoneyCollision();
 
 
 int main(int argc, char** argv) {
@@ -161,6 +174,7 @@ void drawStuff() {
         gluLookAt(x, 1.0f, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
 
     checkByHouses();
+    checkMoneyCollision();
 
     // Draw ground
     glColor3ub(249, 213, 187);
@@ -245,20 +259,25 @@ void drawStuff() {
     glTranslatef(25, 0, -40);
     drawSpongebobHouse();
     glPopMatrix();
-
     // "For Sale" signs
-    glPushMatrix();
-    glTranslatef(-12, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(9, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(28, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
+    if (!patrick_sold) {
+        glPushMatrix();
+        glTranslatef(-12, 0, -10);
+        drawSign("For Sale");
+        glPopMatrix();
+    }
+    if (!squidward_sold) {
+        glPushMatrix();
+        glTranslatef(9, 0, -10);
+        drawSign("For Sale");
+        glPopMatrix();
+    }
+    if (!spongebob_sold) {
+        glPushMatrix();
+        glTranslatef(28, 0, -10);
+        drawSign("For Sale");
+        glPopMatrix();
+    }
     glPushMatrix();
     glTranslatef(1100, 0, 0);
     drawSign("EasterEgg");
@@ -301,6 +320,59 @@ void drawStuff() {
     glTranslatef(-8, 0, -5);
     drawRock(120.0f, 0.25, 5);
     glPopMatrix();
+
+    // Money
+    // Stack1
+    if (!stack1_collision) {
+        glPushMatrix();
+        glColor3ub(15, 78, 12);
+        glTranslatef(-6, -1, -5);
+        glRotatef(30.0f, 0, 1.0f, 0);
+        glScalef(1.2f, 5.0f, 1.5f);
+        glutSolidCube(0.47);
+        glPopMatrix();
+    }
+    // Stack2
+    if (!stack2_collision) {
+        glPushMatrix();
+        glColor3ub(15, 78, 12);
+        glTranslatef(-16, -1, -15);
+        glRotatef(20.0f, 0, 1.0f, 0);
+        glScalef(1.2f, 5.0f, 1.5f);
+        glutSolidCube(0.47);
+        glPopMatrix();
+    }
+    // Stack3
+    if (!stack3_collision) {
+        glPushMatrix();
+        glColor3ub(15, 78, 12);
+        glTranslatef(-22, -1, -40);
+        glRotatef(10.0f, 0, 1.0f, 0);
+        glScalef(1.2f, 5.0f, 1.5f);
+        glutSolidCube(0.47);
+        glPopMatrix();
+    }
+    // Stack4
+    if (!stack4_collision) {
+        glPushMatrix();
+        glColor3ub(15, 78, 12);
+        glTranslatef(-42, -1, -36);
+        glRotatef(15.0f, 0, 1.0f, 0);
+        glScalef(1.2f, 5.0f, 1.5f);
+        glutSolidCube(0.47);
+        glPopMatrix();
+    }
+    // Shhh
+    if (!secretstack_collision) {
+        glPushMatrix();
+        glColor3ub(15, 78, 12);
+        glTranslatef(3, -1, -40);
+        glRotatef(15.0f, 0, 1.0f, 0);
+        glScalef(1.2f, 5.0f, 1.5f);
+        glutSolidCube(0.47);
+        glPopMatrix();
+    }
+
 }
 
 
@@ -521,6 +593,24 @@ void keyDown(unsigned char key, int x, int y) {
         is_forward = true;
     else if (key == 's')    // Move backward
         is_backward = true;
+    if (bySpongebobHouse) {
+        if (key == 13 && funds >= 1000) {
+            funds -= 1000;
+            spongebob_sold = true;
+        }
+    }
+    if (byPatrickHouse) {
+        if (key == 13 && funds >= 7) {
+            funds -= 7;
+            patrick_sold = true;
+        }
+    }
+    if (bySquidwardHouse) {
+        if (key == 13 && funds >= 1000000) {
+            funds -= 1000000;
+            squidward_sold = true;
+        }
+    }
 }
 
 
@@ -679,7 +769,9 @@ void renderText() {
     drawText("Jump ---- ", 20, 478, blackColor, helvetica);
     drawText("Spacebar", 122, 478, blackColor, helvetica);
     drawText("Camera View: Arrow Keys", 5, 453, blackColor, helvetica);
-    drawText("Quit Program: Escape", 5, 428, blackColor, helvetica);
+    drawText("Purchase House: Enter", 5, 438, blackColor, helvetica);
+    drawText("Quit Program: Escape", 5, 413, blackColor, helvetica);
+    drawText("Funds: $" + to_string(funds), 5, 328, blackColor, helvetica);
 
     if (byPatrickHouse) {
         drawText("Home for sale: Patrick's Home", 10, 140, whiteColor, roman);
@@ -839,5 +931,43 @@ void checkByHouses() {
 
     if (x > 20 && x < 30 && z > -35 && z < -25) {
         bySpongebobHouse = true;
+    }
+}
+
+void checkMoneyCollision() {
+    // Stack1 -6 -5
+    if (x >= -7 && x <= -5 && z >= -4 && z <= -3) {
+        if (!stack1_collision) {
+            funds += 250;
+        }
+        stack1_collision = true;
+    }
+    // Stack2 -16 -15
+    if (x >= -17 && x <= -14 && z >= -16 && z <= -14) {
+        if (!stack2_collision) {
+            funds += 250;
+        }
+        stack2_collision = true;
+    }
+    // Stack3 -22 -40
+    if (x >= -23 && x <= -21 && z >= -41 && z <= -39) {
+        if (!stack3_collision) {
+            funds += 250;
+        }
+        stack3_collision = true;
+    }
+    // Stack4 -42 -36
+    if (x >= -43 && x <= -41 && z >= -37 && z <= -35) {
+        if (!stack4_collision) {
+            funds += 250;
+        }
+        stack4_collision = true;
+    }
+    // SecretStack 3 -40
+    if (x >= 2 && x <= 4 && z >= -41 && z <= -39) {
+        if (!secretstack_collision) {
+            funds += 1000000;
+        }
+        secretstack_collision = true;
     }
 }
