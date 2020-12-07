@@ -98,6 +98,7 @@ void drawText(std::string text, int x, int y, int rgb[3], void* font);
 void drawLeaf(float size, float rotx, float roty, float rotz, int seed);
 void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_index, int index);
 void drawPlant(float size, int index);
+void drawSign(string text);
 void createPlant(int seed);
 void drawRock(GLfloat angle, double size, GLint smoothness);
 void checkByHouses();
@@ -137,6 +138,169 @@ int main(int argc, char** argv) {
 void timerCallback(int value) {
     mainDisplayCallback();
     glutTimerFunc(8, timerCallback, 123);
+}
+
+
+void mainDisplayCallback(void) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    cameraHandler();
+    drawStuff();
+    renderText();
+    glutSwapBuffers();
+}
+
+
+void drawStuff() {
+    // Reset transformations
+    glLoadIdentity();
+
+    // Set the camera
+    if (is_jumping)
+        gluLookAt(x, y, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
+    else
+        gluLookAt(x, 1.0f, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
+
+    checkByHouses();
+
+    // Draw ground
+    glColor3ub(249, 213, 187);
+    glBegin(GL_QUADS);
+    glVertex3f(-1000.0f, 0.0f, -1000.0f);
+    glVertex3f(-1000.0f, 0.0f, 1000.0f);
+    glVertex3f(1000.0f, 0.0f, 1000.0f);
+    glVertex3f(1000.0f, 0.0f, -1000.0f);
+    glEnd();
+
+    // Draw road
+    glColor3ub(160, 160, 160);
+    glBegin(GL_QUADS);
+    glVertex3f(-1000.0f, 0.01f, -4.0f);
+    glVertex3f(-1000.0f, 0.01f, 4.0f);
+    glVertex3f(1000.0f, 0.01f, 4.0f);
+    glVertex3f(1000.0f, 0.01f, -4.0f);
+    glEnd();
+
+    //Road to Squidward's House
+    glColor3ub(50, 50, 50);
+    glBegin(GL_QUADS);
+    glVertex3f(2.0f, 0.02f, -35.0f);
+    glVertex3f(8.0f, 0.02f, -35.0f);
+    glVertex3f(8.0f, 0.02f, -31.0f);
+    glVertex3f(2.0f, 0.02f, -31.0f);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(2.0f, 0.02f, -27.0f);
+    glVertex3f(8.0f, 0.02f, -27.0f);
+    glVertex3f(8.0f, 0.02f, -23.0f);
+    glVertex3f(2.0f, 0.02f, -23.0f);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(2.0f, 0.02f, -19.0f);
+    glVertex3f(8.0f, 0.02f, -19.0f);
+    glVertex3f(8.0f, 0.02f, -15.0f);
+    glVertex3f(2.0f, 0.02f, -15.0f);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glVertex3f(2.0f, 0.02f, -11.0f);
+    glVertex3f(8.0f, 0.02f, -11.0f);
+    glVertex3f(8.0f, 0.02f, -7.0f);
+    glVertex3f(2.0f, 0.02f, -7.0f);
+    glEnd();
+
+    //Road to Patrick's House
+    glColor3ub(50, 50, 50);
+    glBegin(GL_QUADS);
+    glVertex3f(-17.5f, 0.02f, -36.0f);
+    glVertex3f(-12.5f, 0.02f, -36.0f);
+    glVertex3f(-12.5f, 0.02f, -3.9f);
+    glVertex3f(-17.5f, 0.02f, -3.9f);
+    glEnd();
+
+    //Road to Spongebob's House
+    glColor3ub(50, 50, 50);
+    glBegin(GL_QUADS);
+    glVertex3f(23.0f, 0.02f, -35.0f);
+    glVertex3f(27.0f, 0.02f, -35.0f);
+    glVertex3f(27.0f, 0.02f, -3.9f);
+    glVertex3f(23.0f, 0.02f, -3.9f);
+    glEnd();
+
+    // Draw Patrick's house
+    glPushMatrix();
+    glTranslatef(-15, 0, -40);
+    drawPatrickHouse();
+    glPopMatrix();
+
+    // Draw Squidward's house
+    glPushMatrix();
+    glTranslatef(5, 0, -40);
+    drawSquidwardHouse();
+    glPopMatrix();
+
+    // Draw Spongebob's house
+    glPushMatrix();
+    glTranslatef(25, 0, -40);
+    drawSpongebobHouse();
+    glPopMatrix();
+
+    // "For Sale" signs
+    glPushMatrix();
+    glTranslatef(-12, 0, -10);
+    drawSign("For Sale");
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(9, 0, -10);
+    drawSign("For Sale");
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(28, 0, -10);
+    drawSign("For Sale");
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(1100, 0, 0);
+    drawSign("EasterEgg");
+    glPopMatrix();
+
+    // Plants
+    for (size_t i = 0; i < number_of_plants; i++) {
+        glPushMatrix();
+        glTranslatef(plantMatrix[i][1][0], 0, plantMatrix[i][1][1]);
+        drawPlant(0.25, i);
+        glPopMatrix();
+    }
+
+    // Rocks
+    glPushMatrix();
+    glTranslatef(35, 0, 10);
+    drawRock(0, 0.33, 5);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(-25, 0, 5.25);
+    drawRock(20.0f, 0.5, 8);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(-1, 0, -40);
+    drawRock(40.0f, 0.33, 5);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(18.5, 0, -20);
+    drawRock(60.0f, 0.25, 5);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(18, 0, -18);
+    drawRock(80.0f, 0.33, 5);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(11.5, 0, -50);
+    drawRock(100.0f, 0.25, 8);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(-8, 0, -5);
+    drawRock(120.0f, 0.25, 5);
+    glPopMatrix();
 }
 
 
@@ -235,6 +399,7 @@ void drawSquidwardHouse() {
 }
 
 
+// Leaves for Spongebob's House
 void drawLeaf(float size, float rotx, float roty, float rotz, int seed) {
     std::srand(seed);
     glPushMatrix();
@@ -333,171 +498,6 @@ void drawSign(string text) {
     glScalef(0.003f, 0.003f, 0.3f);
     for (size_t i = 0; i < text.length(); i++)
         glutStrokeCharacter(font, text[i]);
-    glPopMatrix();
-}
-
-
-void mainDisplayCallback(void) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    cameraHandler();
-    drawStuff();
-    renderText();
-    glutSwapBuffers();
-}
-
-
-void drawStuff() {
-    // Reset transformations
-    glLoadIdentity();
-
-    // Set the camera
-    if (is_jumping)
-        gluLookAt(x, y, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
-    else
-        gluLookAt(x, 1.0f, z, x + lx, y, z + lz, 0.0f, 1.0f, 0.0f);
-
-    checkByHouses();
-
-    // Draw ground
-    glColor3ub(249, 213, 187);
-    glBegin(GL_QUADS);
-    glVertex3f(-1000.0f, 0.0f, -1000.0f);
-    glVertex3f(-1000.0f, 0.0f, 1000.0f);
-    glVertex3f(1000.0f, 0.0f, 1000.0f);
-    glVertex3f(1000.0f, 0.0f, -1000.0f);
-    glEnd();
-
-    // Draw road
-    glColor3ub(160, 160, 160);
-    glBegin(GL_QUADS);
-    glVertex3f(-1000.0f, 0.01f, -4.0f);
-    glVertex3f(-1000.0f, 0.01f, 4.0f);
-    glVertex3f(1000.0f, 0.01f, 4.0f);
-    glVertex3f(1000.0f, 0.01f, -4.0f);
-    glEnd();
-
-    //Road to Squidward's House
-    glColor3ub(50, 50, 50);
-    glBegin(GL_QUADS);
-    glVertex3f(2.0f, 0.02f, -35.0f);
-    glVertex3f(8.0f, 0.02f, -35.0f);
-    glVertex3f(8.0f, 0.02f, -31.0f);
-    glVertex3f(2.0f, 0.02f, -31.0f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glVertex3f(2.0f, 0.02f, -27.0f);
-    glVertex3f(8.0f, 0.02f, -27.0f);
-    glVertex3f(8.0f, 0.02f, -23.0f);
-    glVertex3f(2.0f, 0.02f, -23.0f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glVertex3f(2.0f, 0.02f, -19.0f);
-    glVertex3f(8.0f, 0.02f, -19.0f);
-    glVertex3f(8.0f, 0.02f, -15.0f);
-    glVertex3f(2.0f, 0.02f, -15.0f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glVertex3f(2.0f, 0.02f, -11.0f);
-    glVertex3f(8.0f, 0.02f, -11.0f);
-    glVertex3f(8.0f, 0.02f, -7.0f);
-    glVertex3f(2.0f, 0.02f, -7.0f);
-    glEnd();
-
-    //Road to Patrick's House
-    glColor3ub(50, 50, 50);
-    glBegin(GL_QUADS);
-    glVertex3f(-17.5f, 0.02f, -36.0f);
-    glVertex3f(-12.5f, 0.02f, -36.0f);
-    glVertex3f(-12.5f, 0.02f, -3.9f);
-    glVertex3f(-17.5f, 0.02f, -3.9f);
-    glEnd();
-
-    //Road to Spongebob's House
-    glColor3ub(50, 50, 50);
-    glBegin(GL_QUADS);
-    glVertex3f(23.0f, 0.02f, -35.0f);
-    glVertex3f(27.0f, 0.02f, -35.0f);
-    glVertex3f(27.0f, 0.02f, -3.9f);
-    glVertex3f(23.0f, 0.02f, -3.9f);
-    glEnd();
-
-
-
-    // Draw Patrick's house
-    glPushMatrix();
-    glTranslatef(-15, 0, -40);
-    drawPatrickHouse();
-    glPopMatrix();
-
-    // Draw Squidward's house
-    glPushMatrix();
-    glTranslatef(5, 0, -40);
-    drawSquidwardHouse();
-    glPopMatrix();
-
-    // Draw Spongebob's house
-    glPushMatrix();
-    glTranslatef(25, 0, -40);
-    drawSpongebobHouse();
-    glPopMatrix();
-
-    // "For Sale" signs
-    glPushMatrix();
-    glTranslatef(-12, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(9, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(28, 0, -10);
-    drawSign("For Sale");
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(1100, 0, 0);
-    drawSign("EasterEgg");
-    glPopMatrix();
-
-    // Plants
-    for (size_t i = 0; i < number_of_plants; i++) {
-        glPushMatrix();
-        glTranslatef(plantMatrix[i][1][0], 0, plantMatrix[i][1][1]);
-        drawPlant(0.25, i);
-        glPopMatrix();
-    }
-
-    // Rocks
-    glPushMatrix();
-    glTranslatef(35, 0, 10);
-    drawRock(0, 0.33, 5);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(-25, 0, 5.25);
-    drawRock(20.0f, 0.5, 8);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(-1, 0, -40);
-    drawRock(40.0f, 0.33, 5);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(18.5, 0, -20);
-    drawRock(60.0f, 0.25, 5);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(18, 0, -18);
-    drawRock(80.0f, 0.33, 5);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(11.5, 0, -50);
-    drawRock(100.0f, 0.25, 8);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(-8, 0, -5);
-    drawRock(120.0f, 0.25, 5);
     glPopMatrix();
 }
 
@@ -718,6 +718,8 @@ void renderText() {
     glEnable(GL_TEXTURE_2D);
 }
 
+
+// Function for drawing the advertisement info for each house
 void drawSaleInfoSign() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
@@ -739,6 +741,7 @@ void drawText(std::string text, int x, int y, int rgb[3], void* font) {
 }
 
 
+// Draws a single leaf given information from the plantMatrix
 void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_index, int index) {
     float r = plantMatrix[parent_index][0][0];
     float g = plantMatrix[parent_index][0][1];
@@ -760,6 +763,7 @@ void drawPlantLeaf(float size, float rotx, float roty, float rotz, int parent_in
 }
 
 
+// Draws the various leaves of a plant
 void drawPlant(float size, int index) {
     drawPlantLeaf(size, 0, 0, 0, index, 2);
     drawPlantLeaf(size, 30.0f, 0, 0, index, 3);
@@ -773,6 +777,7 @@ void drawPlant(float size, int index) {
 }
 
 
+// Creates and stores all the elements of plants into the plantMatrix
 void createPlant(int seed) {
     vector<vector<float>> plant;
     vector<float> plant_color;
@@ -808,6 +813,7 @@ void createPlant(int seed) {
 }
 
 
+// Draws a super cool rock
 void drawRock(GLfloat angle, double size, GLint smoothness) {
     glPushMatrix();
     glColor3ub(47, 79, 79);
@@ -816,6 +822,8 @@ void drawRock(GLfloat angle, double size, GLint smoothness) {
     glPopMatrix();
 }
 
+
+// Checks if a the user is near a specifc house based on X and Z ranges
 void checkByHouses() {
     byPatrickHouse = false;
     bySquidwardHouse = false;
